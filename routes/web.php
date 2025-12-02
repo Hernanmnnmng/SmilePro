@@ -20,6 +20,8 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/admin/medewerkers', [AdminController::class, 'medewerkers'])->name('admin.medewerkers');
+    Route::get('/admin/medewerkers/create', [AdminController::class, 'create'])->name('admin.medewerkers.create');
+    Route::post('/admin/medewerkers', [AdminController::class, 'store'])->name('admin.medewerkers.store');
     Route::post('/admin/user/{id}/role', [AdminController::class, 'updateRole'])->name('admin.user.role');
     Route::get('/admin/user/{id}/availabilities', [AdminController::class, 'showAvailabilities'])->name('admin.user.availabilities');
     Route::get('/admin/user/{id}/edit', [AdminController::class, 'edit'])->name('admin.user.edit');

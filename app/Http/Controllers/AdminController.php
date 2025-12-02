@@ -40,7 +40,7 @@ class AdminController extends Controller
     public function medewerkers()
     {
         try {
-            $medewerkers = User::whereIn('role', ['tandarts', 'mondhygienist', 'assistent'])->get();
+            $medewerkers = User::whereIn('role', ['tandarts', 'mondhygienist', 'assistent'])->orderBy('name')->get();
             return view('admin.medewerkers', compact('medewerkers'));
         } catch (\Exception $e) {
             Log::error('Error loading medewerkers', [
@@ -49,6 +49,63 @@ class AdminController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return redirect()->route('dashboard')->with('error', 'Er is een fout opgetreden bij het laden van de medewerkers.');
+        }
+    }
+
+    /**
+     * Show the form for creating a new employee
+     */
+    public function create()
+    {
+        try {
+            return view('admin.create');
+        } catch (\Exception $e) {
+            Log::error('Error loading create employee form', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('admin.medewerkers')->with('error', 'Er is een fout opgetreden bij het laden van het formulier.');
+        }
+    }
+
+    /**
+     * Store a newly created employee
+     */
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email',
+                'password' => 'required|string|min:8|confirmed',
+                'role' => 'required|in:tandarts,mondhygienist,assistent',
+            ]);
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+            ]);
+
+            Log::info('Employee created successfully', [
+                'new_user_id' => $user->id,
+                'new_user_name' => $user->name,
+                'new_user_role' => $user->role,
+                'created_by' => auth()->id()
+            ]);
+
+            return redirect()->route('admin.medewerkers')->with('success', 'Medewerker succesvol aangemaakt!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error creating employee', [
+                'request_data' => $request->except('password', 'password_confirmation'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Er is een fout opgetreden bij het aanmaken van de medewerker.')->withInput();
         }
     }
 
@@ -133,7 +190,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Update user information (name, email, password)
+     * Update user information (name, email, password, role)
      */
     public function update(Request $request, $id)
     {
@@ -150,10 +207,20 @@ class AdminController extends Controller
                 $validationRules['password'] = 'required|string|min:8|confirmed';
             }
 
+            // Validate role if provided (for employees)
+            if ($request->filled('role')) {
+                $validationRules['role'] = 'required|in:tandarts,mondhygienist,assistent';
+            }
+
             $request->validate($validationRules);
 
             $user->name = $request->name;
             $user->email = $request->email;
+            
+            // Update role if provided (for employees)
+            if ($request->filled('role')) {
+                $user->role = $request->role;
+            }
             
             // Only update password if provided
             if ($request->filled('password')) {
@@ -167,10 +234,14 @@ class AdminController extends Controller
                 'updated_by' => auth()->id()
             ]);
 
-            return redirect()->route('admin.index')->with('success', 'Gebruiker bijgewerkt!');
+            // Redirect to medewerkers page if this is an employee, otherwise to admin index
+            $isEmployee = in_array($user->role, ['tandarts', 'mondhygienist', 'assistent']);
+            $redirectRoute = $isEmployee ? 'admin.medewerkers' : 'admin.index';
+            
+            return redirect()->route($redirectRoute)->with('success', 'Gebruiker bijgewerkt!');
         } catch (ModelNotFoundException $e) {
             Log::warning('User not found for update', ['user_id' => $id]);
-            return redirect()->route('admin.index')->with('error', 'Gebruiker niet gevonden.');
+            return redirect()->route('admin.medewerkers')->with('error', 'Gebruiker niet gevonden.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
@@ -194,29 +265,37 @@ class AdminController extends Controller
             $user = User::findOrFail($id);
             
             if ($user->id === auth()->id()) {
-                return redirect()->route('admin.index')->with('error', 'Je kunt jezelf niet verwijderen!');
+                $isEmployee = in_array($user->role, ['tandarts', 'mondhygienist', 'assistent']);
+                $redirectRoute = $isEmployee ? 'admin.medewerkers' : 'admin.index';
+                return redirect()->route($redirectRoute)->with('error', 'Je kunt jezelf niet verwijderen!');
             }
 
             $userName = $user->name;
+            $userRole = $user->role;
             $user->delete();
             
             Log::info('User deleted successfully', [
                 'deleted_user_id' => $id,
                 'deleted_user_name' => $userName,
+                'deleted_user_role' => $userRole,
                 'deleted_by' => auth()->id()
             ]);
 
-            return redirect()->route('admin.index')->with('success', 'Gebruiker verwijderd!');
+            // Redirect to medewerkers page if this was an employee, otherwise to admin index
+            $isEmployee = in_array($userRole, ['tandarts', 'mondhygienist', 'assistent']);
+            $redirectRoute = $isEmployee ? 'admin.medewerkers' : 'admin.index';
+            
+            return redirect()->route($redirectRoute)->with('success', 'Gebruiker verwijderd!');
         } catch (ModelNotFoundException $e) {
             Log::warning('User not found for deletion', ['user_id' => $id]);
-            return redirect()->route('admin.index')->with('error', 'Gebruiker niet gevonden.');
+            return redirect()->route('admin.medewerkers')->with('error', 'Gebruiker niet gevonden.');
         } catch (\Exception $e) {
             Log::error('Error deleting user', [
                 'user_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return redirect()->route('admin.index')->with('error', 'Er is een fout opgetreden bij het verwijderen van de gebruiker.');
+            return redirect()->route('admin.medewerkers')->with('error', 'Er is een fout opgetreden bij het verwijderen van de gebruiker.');
         }
     }
 }

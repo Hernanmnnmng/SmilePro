@@ -4,13 +4,9 @@
 <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-2xl mx-auto">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Medewerker Bewerken</h2>
-            @php
-                $isEmployee = in_array($user->role, ['tandarts', 'mondhygienist', 'assistent']);
-                $backRoute = $isEmployee ? 'admin.medewerkers' : 'admin.index';
-            @endphp
-            <a href="{{ route($backRoute) }}" class="text-gray-600 hover:text-gray-800 underline text-sm flex items-center gap-1">
-                <span>←</span> Terug
+            <h2 class="text-2xl font-bold text-gray-800">Nieuwe Medewerker Aanmaken</h2>
+            <a href="{{ route('admin.medewerkers') }}" class="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1">
+                <span>←</span> Terug naar Overzicht
             </a>
         </div>
         
@@ -31,9 +27,8 @@
         @endif
 
         <div class="bg-white rounded-lg shadow-md p-6 sm:p-8">
-            <form method="POST" action="{{ route('admin.user.update', $user->id) }}" class="space-y-6">
+            <form method="POST" action="{{ route('admin.medewerkers.store') }}" class="space-y-6">
                 @csrf
-                @method('PATCH')
 
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -43,8 +38,9 @@
                         type="text" 
                         name="name" 
                         id="name" 
-                        value="{{ old('name', $user->name) }}" 
+                        value="{{ old('name') }}" 
                         class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        placeholder="Bijv. Jan Jansen"
                         required
                         autofocus
                     >
@@ -58,77 +54,58 @@
                         type="email" 
                         name="email" 
                         id="email" 
-                        value="{{ old('email', $user->email) }}" 
+                        value="{{ old('email') }}" 
                         class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        placeholder="bijv. jan.jansen@smilepro.nl"
                         required
                     >
                 </div>
 
-                @php
-                    $isEmployee = in_array($user->role, ['tandarts', 'mondhygienist', 'assistent']);
-                @endphp
-
-                @if($isEmployee)
-                    <div>
-                        <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
-                            Rol <span class="text-red-500">*</span>
-                        </label>
-                        <select 
-                            name="role" 
-                            id="role" 
-                            class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                            required
-                        >
-                            <option value="tandarts" {{ old('role', $user->role) === 'tandarts' ? 'selected' : '' }}>Tandarts</option>
-                            <option value="mondhygienist" {{ old('role', $user->role) === 'mondhygienist' ? 'selected' : '' }}>Mondhygiënist</option>
-                            <option value="assistent" {{ old('role', $user->role) === 'assistent' ? 'selected' : '' }}>Assistent</option>
-                        </select>
-                        <p class="mt-1 text-sm text-gray-500">Selecteer de functie van de medewerker.</p>
-                    </div>
-                @else
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Rol</label>
-                        <div class="text-gray-600 px-4 py-2 bg-gray-50 rounded-md">
-                            @php
-                                $roleLabels = [
-                                    'patient' => 'Patiënt',
-                                    'tandarts' => 'Tandarts',
-                                    'mondhygienist' => 'Mondhygiënist',
-                                    'assistent' => 'Assistent',
-                                    'management' => 'Management'
-                                ];
-                            @endphp
-                            {{ $roleLabels[$user->role] ?? ucfirst($user->role) }}
-                        </div>
-                        <p class="mt-1 text-sm text-gray-500">De rol kan worden gewijzigd op de gebruikersbeheer pagina.</p>
-                    </div>
-                @endif
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+                        Rol <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                        name="role" 
+                        id="role" 
+                        class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        required
+                    >
+                        <option value="">Selecteer een rol</option>
+                        <option value="tandarts" {{ old('role') === 'tandarts' ? 'selected' : '' }}>Tandarts</option>
+                        <option value="mondhygienist" {{ old('role') === 'mondhygienist' ? 'selected' : '' }}>Mondhygiënist</option>
+                        <option value="assistent" {{ old('role') === 'assistent' ? 'selected' : '' }}>Assistent</option>
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500">Selecteer de functie van de nieuwe medewerker.</p>
+                </div>
 
                 <div>
                     <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nieuw Wachtwoord
+                        Wachtwoord <span class="text-red-500">*</span>
                     </label>
                     <input 
                         type="password" 
                         name="password" 
                         id="password" 
                         class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                        placeholder="Laat leeg om niet te wijzigen"
+                        placeholder="Minimaal 8 karakters"
+                        required
                         minlength="8"
                     >
-                    <p class="mt-1 text-sm text-gray-500">Laat leeg om het huidige wachtwoord te behouden. Minimaal 8 karakters als je het wachtwoord wijzigt.</p>
+                    <p class="mt-1 text-sm text-gray-500">Het wachtwoord moet minimaal 8 karakters lang zijn.</p>
                 </div>
 
                 <div>
                     <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-                        Bevestig Wachtwoord
+                        Bevestig Wachtwoord <span class="text-red-500">*</span>
                     </label>
                     <input 
                         type="password" 
                         name="password_confirmation" 
                         id="password_confirmation" 
                         class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                        placeholder="Bevestig nieuw wachtwoord"
+                        placeholder="Herhaal het wachtwoord"
+                        required
                         minlength="8"
                     >
                 </div>
@@ -138,10 +115,10 @@
                         type="submit" 
                         class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-md transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                        Opslaan
+                        Medewerker Aanmaken
                     </button>
                     <a 
-                        href="{{ route($backRoute) }}" 
+                        href="{{ route('admin.medewerkers') }}" 
                         class="flex-1 sm:flex-none bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-2.5 rounded-md text-center transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                     >
                         Annuleren
