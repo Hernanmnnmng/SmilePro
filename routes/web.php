@@ -19,6 +19,8 @@ Route::get('/dashboard', function () {
 // Admin portal (only for management)
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/create', [AdminController::class, 'createUser'])->name('admin.users.create');
+    Route::post('/admin/users', [AdminController::class, 'storeUser'])->name('admin.users.store');
     Route::get('/admin/medewerkers', [AdminController::class, 'medewerkers'])->name('admin.medewerkers');
     Route::get('/admin/medewerkers/create', [AdminController::class, 'create'])->name('admin.medewerkers.create');
     Route::post('/admin/medewerkers', [AdminController::class, 'store'])->name('admin.medewerkers.store');

@@ -21,7 +21,7 @@ class AdminController extends Controller
     public function index()
     {
         try {
-            $users = User::all();
+            $users = User::orderBy('name')->get();
             return view('admin.index', compact('users'));
         } catch (\Exception $e) {
             Log::error('Error loading admin index', [
@@ -30,6 +30,63 @@ class AdminController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return redirect()->route('dashboard')->with('error', 'Er is een fout opgetreden bij het laden van de gebruikerslijst.');
+        }
+    }
+
+    /**
+     * Show the form for creating a new user (all roles)
+     */
+    public function createUser()
+    {
+        try {
+            return view('admin.create-user');
+        } catch (\Exception $e) {
+            Log::error('Error loading create user form', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('admin.index')->with('error', 'Er is een fout opgetreden bij het laden van het formulier.');
+        }
+    }
+
+    /**
+     * Store a newly created user (all roles)
+     */
+    public function storeUser(Request $request)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users,email',
+                'password' => 'required|string|min:8|confirmed',
+                'role' => 'required|in:patient,tandarts,mondhygienist,assistent,management',
+            ]);
+
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $request->role,
+            ]);
+
+            Log::info('User created successfully', [
+                'new_user_id' => $user->id,
+                'new_user_name' => $user->name,
+                'new_user_role' => $user->role,
+                'created_by' => auth()->id()
+            ]);
+
+            return redirect()->route('admin.index')->with('success', 'Gebruiker succesvol aangemaakt!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            Log::error('Error creating user', [
+                'request_data' => $request->except('password', 'password_confirmation'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Er is een fout opgetreden bij het aanmaken van de gebruiker.')->withInput();
         }
     }
 
