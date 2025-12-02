@@ -32,7 +32,7 @@
                             <div class="mb-3"><i class="bi bi-receipt display-4 text-success"></i></div>
                             <h5 class="card-title fw-bold">Facturen</h5>
                             <p class="card-text">Bekijk uw facturen en betalingen.</p>
-                            <a href="#" class="btn btn-success rounded-pill px-4">Naar facturen</a>
+                            <a href="{{ route('invoices.index') }}" class="btn btn-success rounded-pill px-4">Naar facturen</a>
                         </div>
                     </div>
                 </div>
@@ -53,10 +53,7 @@
                             <div class="mb-3"><i class="bi bi-calendar2-week display-4 text-primary"></i></div>
                             <h5 class="card-title fw-bold">Agenda & Afspraken</h5>
                             <p class="card-text">Bekijk uw agenda en afspraken.</p>
-                            <a href="{{ route('appointments.tandarts') }}" class="btn btn-primary rounded-pill px-4 mb-2">Naar agenda</a>
-                            @if($role === 'tandarts')
-                                <a href="{{ route('availability.new.index') }}" class="btn btn-success rounded-pill px-4">Beschikbaarheid instellen</a>
-                            @endif
+                            <a href="{{ route('appointments.tandarts') }}" class="btn btn-primary rounded-pill px-4">Naar agenda</a>
                         </div>
                     </div>
                 </div>
@@ -96,6 +93,16 @@
                 <div class="col-md-4">
                     <div class="card shadow h-100 border-0 rounded-4">
                         <div class="card-body text-center">
+                            <div class="mb-3"><i class="bi bi-person-badge display-4 text-info"></i></div>
+                            <h5 class="card-title fw-bold">Medewerker Overzicht</h5>
+                            <p class="card-text">Bekijk alle medewerkers van de praktijk.</p>
+                            <a href="{{ route('admin.medewerkers') }}" class="btn btn-info rounded-pill px-4 text-white">Naar medewerkers</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow h-100 border-0 rounded-4">
+                        <div class="card-body text-center">
                             <div class="mb-3"><i class="bi bi-bar-chart-line-fill display-4 text-primary"></i></div>
                             <h5 class="card-title fw-bold">Statistieken</h5>
                             <p class="card-text">Bekijk statistieken en rapportages.</p>
@@ -110,6 +117,16 @@
                             <h5 class="card-title fw-bold">Beschikbaarheid</h5>
                             <p class="card-text">Beheer medewerker beschikbaarheid.</p>
                             <a href="{{ route('availability.index') }}" class="btn btn-success rounded-pill px-4">Naar beschikbaarheid</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow h-100 border-0 rounded-4">
+                        <div class="card-body text-center">
+                            <div class="mb-3"><i class="bi bi-receipt-cutoff display-4 text-warning"></i></div>
+                            <h5 class="card-title fw-bold">Alle Facturen</h5>
+                            <p class="card-text">Bekijk alle facturen van klanten.</p>
+                            <a href="{{ route('invoices.all') }}" class="btn btn-warning rounded-pill px-4 text-white">Naar facturen</a>
                         </div>
                     </div>
                 </div>

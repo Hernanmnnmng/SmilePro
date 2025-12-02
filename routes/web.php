@@ -19,6 +19,7 @@ Route::get('/dashboard', function () {
 // Admin portal (only for management)
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/medewerkers', [AdminController::class, 'medewerkers'])->name('admin.medewerkers');
     Route::post('/admin/user/{id}/role', [AdminController::class, 'updateRole'])->name('admin.user.role');
     Route::get('/admin/user/{id}/availabilities', [AdminController::class, 'showAvailabilities'])->name('admin.user.availabilities');
     Route::get('/admin/user/{id}/edit', [AdminController::class, 'edit'])->name('admin.user.edit');
@@ -27,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 use App\Http\Controllers\AvailabilityNewController;
+use App\Http\Controllers\InvoiceController;
 Route::middleware('auth')->group(function () {
         // New per-date availability management (AJAX for calendar)
         Route::get('/availability-new', [AvailabilityNewController::class, 'index'])->name('availability.new.index');
@@ -47,8 +49,15 @@ Route::middleware('auth')->group(function () {
 
     // Medewerker availability management
     Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
-    Route::post('/availability', [AvailabilityController::class, 'store'])->name('availability.store');
-    Route::delete('/availability/{id}', [AvailabilityController::class, 'destroy'])->name('availability.destroy');
+    
+    // Invoice routes
+    Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+    Route::get('/invoices/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
+    Route::get('/invoices/{id}/download', [InvoiceController::class, 'download'])->name('invoices.download');
+    
+    // Management: view all invoices and delete
+    Route::get('/admin/invoices', [InvoiceController::class, 'all'])->name('invoices.all');
+    Route::delete('/admin/invoices/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
 });
 
 require __DIR__.'/auth.php';

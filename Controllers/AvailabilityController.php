@@ -2,43 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Availability;
+use App\Models\AvailabilityNew;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
+/**
+ * Controller for managing worker availability
+ * Shows availability management page for tandarts and mondhygienist
+ */
 class AvailabilityController extends Controller
 {
+    /**
+     * Display the availability management page
+     * Shows all availability slots for the logged-in worker
+     */
     public function index()
     {
-        $availabilities = Availability::where('user_id', Auth::id())->get();
-        return view('availability.index', compact('availabilities'));
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'day_of_week' => 'required|string',
-            'start_time' => 'required',
-            'end_time' => 'required|after:start_time',
-        ]);
-        $data['user_id'] = Auth::id();
-        Availability::updateOrCreate(
-            [
-                'user_id' => $data['user_id'],
-                'day_of_week' => $data['day_of_week'],
-            ],
-            [
-                'start_time' => $data['start_time'],
-                'end_time' => $data['end_time'],
-            ]
-        );
-        return redirect()->route('availability.index')->with('success', 'Beschikbaarheid opgeslagen!');
-    }
-
-    public function destroy($id)
-    {
-        $availability = Availability::where('user_id', Auth::id())->findOrFail($id);
-        $availability->delete();
-        return redirect()->route('availability.index')->with('success', 'Beschikbaarheid verwijderd!');
+        try {
+            $availabilities = AvailabilityNew::where('user_id', Auth::id())->get();
+            return view('availability.index', compact('availabilities'));
+        } catch (\Exception $e) {
+            Log::error('Error loading availability index', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('dashboard')->with('error', 'Er is een fout opgetreden bij het laden van de beschikbaarheid.');
+        }
     }
 }
