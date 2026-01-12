@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admin/user/{id}/edit', [AdminController::class, 'edit'])->name('admin.user.edit');
     Route::patch('/admin/user/{id}', [AdminController::class, 'update'])->name('admin.user.update');
     Route::delete('/admin/user/{id}', [AdminController::class, 'destroy'])->name('admin.user.destroy');
+    Route::get('/admin/omzet', [AdminController::class, 'omzet'])->name('admin.omzet');
 });
 
 use App\Http\Controllers\AvailabilityNewController;

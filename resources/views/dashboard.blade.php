@@ -3,6 +3,18 @@
         <h2 class="fw-bold display-5 mb-3">Dashboard</h2>
     </x-slot>
     <div class="container py-5">
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         @php $role = auth()->user()->role; @endphp
         <div class="row g-4">
             @if ($role === 'patient')
@@ -127,6 +139,16 @@
                             <h5 class="card-title fw-bold">Alle Facturen</h5>
                             <p class="card-text">Bekijk alle facturen van klanten.</p>
                             <a href="{{ route('invoices.all') }}" class="btn btn-warning rounded-pill px-4 text-white">Naar facturen</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow h-100 border-0 rounded-4">
+                        <div class="card-body text-center">
+                            <div class="mb-3"><i class="bi bi-graph-up-arrow display-4 text-success"></i></div>
+                            <h5 class="card-title fw-bold">Omzet Bekijken</h5>
+                            <p class="card-text">Bekijk de omzet en financiële prestaties.</p>
+                            <a href="{{ route('admin.omzet') }}" class="btn btn-success rounded-pill px-4 text-white">Naar omzet</a>
                         </div>
                     </div>
                 </div>

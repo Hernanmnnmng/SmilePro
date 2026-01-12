@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Availability;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 /**
@@ -353,6 +355,91 @@ class AdminController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return redirect()->route('admin.medewerkers')->with('error', 'Er is een fout opgetreden bij het verwijderen van de gebruiker.');
+        }
+    }
+    /**
+     * Show revenue overview (management only)
+     * Display financial performance metrics
+     */
+    public function omzet()
+    {
+        try {
+            // Check if user has management role
+            if (auth()->user()->role !== 'management') {
+                return redirect()->route('dashboard')->with('error', 'U heeft geen toegang tot deze pagina.');
+            }
+
+            // Get current month and year
+            $currentMonth = now()->month;
+            $currentYear = now()->year;
+
+            // Total revenue all time
+            $totalRevenue = Invoice::sum('total_amount');
+
+            // Revenue this year
+            $yearRevenue = Invoice::whereYear('invoice_date', $currentYear)->sum('total_amount');
+
+            // Revenue this month
+            $monthRevenue = Invoice::whereYear('invoice_date', $currentYear)
+                ->whereMonth('invoice_date', $currentMonth)
+                ->sum('total_amount');
+
+            // Revenue by status
+            $paidRevenue = Invoice::where('status', 'paid')->sum('total_amount');
+            $unpaidRevenue = Invoice::where('status', 'unpaid')->sum('total_amount');
+            $overdueRevenue = Invoice::where('status', 'overdue')->sum('total_amount');
+
+            // Monthly revenue for current year (for chart)
+            $monthlyRevenue = Invoice::whereYear('invoice_date', $currentYear)
+                ->select(
+                    DB::raw('MONTH(invoice_date) as month'),
+                    DB::raw('SUM(total_amount) as total')
+                )
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get()
+                ->pluck('total', 'month')
+                ->toArray();
+
+            // Fill in missing months with 0
+            $monthlyRevenueData = [];
+            for ($i = 1; $i <= 12; $i++) {
+                $monthlyRevenueData[$i] = $monthlyRevenue[$i] ?? 0;
+            }
+
+            // Recent invoices
+            $recentInvoices = Invoice::with('patient')
+                ->orderBy('invoice_date', 'desc')
+                ->limit(10)
+                ->get();
+
+            // Invoice statistics
+            $totalInvoices = Invoice::count();
+            $paidInvoices = Invoice::where('status', 'paid')->count();
+            $unpaidInvoices = Invoice::where('status', 'unpaid')->count();
+            $overdueInvoices = Invoice::where('status', 'overdue')->count();
+
+            return view('admin.omzet', compact(
+                'totalRevenue',
+                'yearRevenue',
+                'monthRevenue',
+                'paidRevenue',
+                'unpaidRevenue',
+                'overdueRevenue',
+                'monthlyRevenueData',
+                'recentInvoices',
+                'totalInvoices',
+                'paidInvoices',
+                'unpaidInvoices',
+                'overdueInvoices'
+            ));
+        } catch (\Exception $e) {
+            Log::error('Error loading revenue overview', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('dashboard')->with('error', 'Er is een fout opgetreden bij het laden van de omzetgegevens.');
         }
     }
 }
