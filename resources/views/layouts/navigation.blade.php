@@ -24,6 +24,9 @@
                                 {{ __('Facturen') }}
                             </x-nav-link>
                         @endif
+                        <x-nav-link :href="route('berichten.index')" :active="request()->routeIs('berichten.*')">
+                            {{ __('Berichten') }}
+                        </x-nav-link>
                     @endauth
                 </div>
             </div>
@@ -102,6 +105,9 @@
                         {{ __('Facturen') }}
                     </x-responsive-nav-link>
                 @endif
+                <x-responsive-nav-link :href="route('berichten.index')" :active="request()->routeIs('berichten.*')">
+                    {{ __('Berichten') }}
+                </x-responsive-nav-link>
             @endauth
         </div>
 

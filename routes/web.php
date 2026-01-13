@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AvailabilityController;
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\BerichtController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -63,6 +64,15 @@ Route::middleware('auth')->group(function () {
     // Management: view all invoices and delete
     Route::get('/admin/invoices', [InvoiceController::class, 'all'])->name('invoices.all');
     Route::delete('/admin/invoices/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+
+    // Message routes
+    Route::get('/berichten', [BerichtController::class, 'index'])->name('berichten.index');
+    Route::get('/berichten/create', [BerichtController::class, 'create'])->name('berichten.create');
+    Route::post('/berichten', [BerichtController::class, 'store'])->name('berichten.store');
+    Route::get('/berichten/{id}', [BerichtController::class, 'show'])->name('berichten.show');
+    Route::delete('/berichten/{id}', [BerichtController::class, 'destroy'])->name('berichten.destroy');
+    Route::post('/berichten/{id}/read', [BerichtController::class, 'markAsRead'])->name('berichten.read');
+    Route::get('/berichten-sent', [BerichtController::class, 'sent'])->name('berichten.sent');
 });
 
 require __DIR__.'/auth.php';
