@@ -3,12 +3,12 @@
 @section('content')
 <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Medewerker Overzicht</h2>
+        <h2 class="text-2xl font-bold text-white">Medewerker Overzicht</h2>
         <div class="flex flex-col sm:flex-row gap-3">
             <a href="{{ route('admin.medewerkers.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md transition duration-150 ease-in-out text-center">
                 + Nieuwe Medewerker
             </a>
-            <a href="{{ route('admin.index') }}" class="text-gray-600 hover:text-gray-800 underline text-sm flex items-center">
+            <a href="{{ route('admin.index') }}" class="text-white hover:text-gray-800 underline text-sm flex items-center">
                 ← Terug naar Gebruikersbeheer
             </a>
         </div>
@@ -99,7 +99,7 @@
         
         <div class="mt-6 flex items-center justify-between">
             <div class="text-sm text-gray-600">
-                <p>Totaal aantal medewerkers: <strong class="text-gray-900">{{ $medewerkers->count() }}</strong></p>
+                <p class="text-white">Totaal aantal medewerkers: <strong class="text-white">{{ $medewerkers->count() }}</strong></p>
             </div>
         </div>
     @else
